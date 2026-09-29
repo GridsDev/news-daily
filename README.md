@@ -30,8 +30,19 @@ npm run preview  # ทดสอบ build
 
 รายการฉบับเก่าจะถูกลบทิ้งเมื่อเกิน 30 วัน (กำหนดที่ `KEEP_DAYS` ในโค้ดบอท)
 
+## การแยกบัญชีและอีเมล
+
+| บัญชี | ที่อยู่ | อีเมลที่ commit | ดูแลอะไร |
+|---|---|---|---|
+| **FahSai** (ฟ้า) | sv | `grids.developer@gmail.com` | repo นี้ — UI + ผลลัพธ์ `.md` |
+| **Ex3-NeoPulse** | Gitea | `2024.3xxx@gmail.com` | โค้ด Python บอท (`Ex3-NeoPulse/news-bot`) |
+
+ตามกฎอีเมลใน `AGENTS.md` — ฟ้าใช้ `grids.developer@gmail.com` เท่านั้น
+ส่วนโค้ด Python เป็นของ Ex3-NeoPulse (Python Tools) ตาม `company-org-structure`
+
 ## หมายเหตุ
 
 - โค้ดเว็บนี้ **ไม่มี Python** เด็ดขาด (แยกจากโค้ดบอทตามกฎของทีม)
 - บอทเก็บอยู่ที่ Gitea `Ex3-NeoPulse/news-bot` และรันบน `sv` เท่านั้น
 - ไม่มีการเก็บ secret ใดๆ ใน repo นี้
+- ต้องเป็น **PUBLIC** — repo ที่เป็น private จะถูก Vercel block deployment
