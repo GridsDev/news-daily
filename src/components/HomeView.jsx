@@ -1,3 +1,5 @@
+import ShareButtons from './ShareButtons.jsx'
+
 export default function HomeView({ articles, onOpen }) {
   if (articles.length === 0) {
     return (
@@ -19,9 +21,12 @@ export default function HomeView({ articles, onOpen }) {
           {latest.weekday} {latest.dateLabel}
           {latest.sourceCount > 0 && ` · ${latest.sourceCount} ข่าว`}
         </p>
-        <button className="btn-primary" onClick={() => onOpen(latest.slug)}>
-          อ่านฉบับนี้ →
-        </button>
+        <div className="hero-actions">
+          <button className="btn-primary" onClick={() => onOpen(latest.date)}>
+            อ่านฉบับนี้ →
+          </button>
+          <ShareButtons article={latest} compact />
+        </div>
       </section>
 
       {rest.length > 0 && (
@@ -30,7 +35,7 @@ export default function HomeView({ articles, onOpen }) {
           <ul className="card-list">
             {rest.map((a) => (
               <li key={a.slug}>
-                <button className="card" onClick={() => onOpen(a.slug)}>
+                <button className="card" onClick={() => onOpen(a.date)}>
                   <div className="card-top">
                     <span className="card-date">
                       {a.weekday} {a.dateLabel}

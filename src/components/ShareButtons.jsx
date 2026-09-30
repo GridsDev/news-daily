@@ -1,0 +1,87 @@
+import { useState, useCallback } from 'react'
+import { articleUrl } from '../lib/router.js'
+
+/**
+ * ปุ่มแชร์ — ไม่ใช้ API key ใดๆ ทั้งสิ้น
+ * · Facebook → เปิด dialog ของ Facebook (ผู้ใช้กดโพสต์เอง)
+ * · แชร์ → Web Share API (มือถือขึ้น native share sheet)
+ * · คัดลอกลิงก์ → clipboard
+ */
+export default function ShareButtons({ article, compact = false }) {
+  const [copied, setCopied] = useState(false)
+  const [nativeShare, setNativeShare] = useState(
+    () => typeof navigator !== 'undefined' && typeof navigator.share === 'function',
+  )
+
+  const url = articleUrl(article?.date)
+  const title = article?.title || 'บทสรุปข่าวคริปโตประจำวัน'
+
+  const shareText = [title, url].join('\n')
+
+  const onFacebook = useCallback(() => {
+    const sharer = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    window.open(sharer, '_blank', 'noopener,noreferrer,width=600,height=640')
+  }, [url])
+
+  const onNative = useCallback(async () => {
+    try {
+      await navigator.share({ title, text: title, url })
+    } catch (err) {
+      // ผู้ใช้กดยกเลิก — ไม่ต้องทำอะไร
+      if (err?.name !== 'AbortError') console.warn('[share]', err)
+    }
+  }, [title, url])
+
+  const onCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // เบราว์เซอร์ไม่อนุญาต clipboard (เช่น http) → ให้เลือกเอง
+      window.prompt('คัดลอกลิงก์นี้', url)
+    }
+  }, [url])
+
+  return (
+    <div className={`share-bar${compact ? ' share-bar-compact' : ''}`}>
+      <span className="share-label">แชร์</span>
+
+      <button className="share-btn share-fb" onClick={onFacebook} title="แชร์ไป Facebook">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
+          <path
+            fill="currentColor"
+            d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z"
+          />
+        </svg>
+        Facebook
+      </button>
+
+      {nativeShare && (
+        <button className="share-btn" onClick={onNative} title="แชร์ผ่านแอปอื่น">
+          <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
+            <path
+              fill="currentColor"
+              d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0 0 6c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92Z"
+            />
+          </svg>
+          แชร์
+        </button>
+      )}
+
+      <button className="share-btn" onClick={onCopy} title="คัดลอกลิงก์">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
+          <path
+            fill="currentColor"
+            d="M16 1a2 2 0 0 0-2 2v10a2 2 0 1 0 4 0V3a2 2 0 0 0-2-2Zm-8 4a2 2 0 0 0-2 2v12a2 2 0 1 0 4 0V7a2 2 0 0 0-2-2Z"
+          />
+          <path
+            fill="currentColor"
+            d="M9 4H7a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3h-2v2h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h2V4Z"
+          />
+        </svg>
+        {copied ? 'คัดลอกแล้ว' : 'คัดลอกลิงก์'}
+      </button>
+    </div>
+  )
+}

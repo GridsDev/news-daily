@@ -12,7 +12,7 @@
 
 ```mermaid
 flowchart TD
-    BOT(["🖥️ newsbot บน sv<br/>รัน 07:00 ทุกวัน"]) --> DB[("🗄️ Supabase<br/>daily_summaries")]
+    BOT(["🖥️ newsbot บน sv<br/>รัน 05:00 ทุกวัน"]) --> DB[("🗄️ Supabase<br/>daily_summaries")]
     BOT --> MD[("📦 content/news/<br/>บทสรุป-YYYY-MM-DD.md")]
     MD --> GH --> V["▲ Vercel build"] --> SITE
 
@@ -40,6 +40,28 @@ flowchart TD
 
 ---
 
+## การแชร์
+
+ปุ่มแชร์ 3 ปุ่ม ไม่ใช้ API key ใดๆ
+
+| ปุ่ม | วิธีทำงาน |
+|---|---|
+| **แชร์ Facebook** | เปิด dialog ของ Facebook (ผู้ใช้กดโพสต์เอง) |
+| **แชร์** | Web Share API — มือถือขึ้น native share sheet |
+| **คัดลอกลิงก์** | clipboard + ขึ้น "คัดลอกแล้ว" |
+
+วางที่: ใต้หัวเรื่อง + ท้ายบทความ (หน้าอ่านเต็ม) · ครั้งเดียว (หน้ารายการ ฉบับล่าสุด)
+
+### เส้นทางของเว็บ
+
+```
+/อ่าน/2026-10-01        ← URL จริง (ไม่ใช้ #)
+/                       ← หน้ารายการ
+```
+
+> **ทำไมไม่ใช้ `#/...`**: Facebook ตัดส่วน `#` ทิ้งตอนแชร์ → คนกดลิงก์จะไปหน้าแรกแทนที่จะไปบทความที่แชร์
+> เลยใช้ URL จริง + `vercel.json` มี rewrite ให้ทุก path มาที่ `index.html`
+
 ## โครงสร้าง
 
 ```
@@ -50,7 +72,11 @@ src/
 ├── App.jsx                       ← routing (hash) + theme + โหลดข้อมูล async
 ├── content-source.js             ← ★ ตัวตัดสินใจ: DB หรือ bundle
 ├── content.js                    ← อ่าน .md ทั้งหมดตอน build (import.meta.glob)
-├── lib/supabase.js               ← ★ อ่าน DB ผ่าน PostgREST
+├── lib/
+│   ├── supabase.js               ← ★ อ่าน DB ผ่าน PostgREST
+│   └── router.js                 ← ★ เส้นทาง URL จริง (แทน hash)
+├── components/
+│   └── ShareButtons.jsx          ← ★ ปุ่มแชร์ 3 ปุ่ม
 ├── components/
 │   ├── HomeView.jsx              ← หน้ารายการ (ฉบับล่าสุด + ฉบับก่อนหน้า)
 │   └── ArticleView.jsx           ← หน้าอ่านเต็ม + front-matter

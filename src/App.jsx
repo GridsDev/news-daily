@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react'
 import { loadArticles } from './content-source.js'
+import { parsePath, navigate } from './lib/router.js'
 import ArticleView from './components/ArticleView.jsx'
 import HomeView from './components/HomeView.jsx'
 
-function parseHash() {
-  const raw = window.location.hash.replace(/^#\/?/, '')
-  return raw ? decodeURIComponent(raw) : ''
-}
-
 export default function App() {
-  const [slug, setSlug] = useState(parseHash)
+  const [date, setDate] = useState(parsePath)
   const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
   const [articles, setArticles] = useState([])
   const [source, setSource] = useState('loading')
@@ -27,9 +23,10 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const onHash = () => setSlug(parseHash())
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    // ปุ่มหลัง/หน้าแรก ของเบราว์เซอร์
+    const onPop = () => setDate(parsePath())
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
   }, [])
 
   useEffect(() => {
@@ -38,13 +35,18 @@ export default function App() {
   }, [dark])
 
   const go = (target) => {
-    window.location.hash = target ? `/${encodeURIComponent(target)}` : ''
-    setSlug(target)
-    window.scrollTo({ top: 0 })
+    navigate(target)
+    setDate(target)
   }
 
-  const current = slug ? articles.find((a) => a.slug === slug) : null
+  const current = date ? articles.find((a) => a.date === date || a.slug === date) : null
   const loading = source === 'loading'
+
+  useEffect(() => {
+    document.title = current
+      ? `${current.title} · บทสรุปข่าวคริปโต`
+      : 'บทสรุปข่าวคริปโตประจำวัน · BTC ETH SOL'
+  }, [current])
 
   return (
     <>
@@ -52,7 +54,7 @@ export default function App() {
         <div className="wrap header-inner">
           <a
             className="brand"
-            href="#/"
+            href="/"
             onClick={(e) => {
               e.preventDefault()
               go('')
@@ -60,7 +62,7 @@ export default function App() {
           >
             <span className="brand-mark">ND</span>
             <span className="brand-text">
-              <strong>บทสรุปข่าวประจำวัน</strong>
+              <strong>บทสรุปข่าวคริปโต</strong>
               <small>BTC · ETH · SOL</small>
             </span>
           </a>
@@ -92,7 +94,7 @@ export default function App() {
       <footer className="site-footer">
         <div className="wrap">
           <p>
-            สร้างอัตโนมัติโดย newsbot บนเครื่อง sv · อัปเดตทุกวัน 07:00 น.
+            สร้างอัตโนมัติโดย newsbot บนเครื่อง sv · อัปเดตทุกวัน 05:00 น.
             {source === 'db' ? ' · ข้อมูลสดจากฐานข้อมูล' : source === 'bundle' ? ' · โหมดสำรอง' : ''}
           </p>
         </div>
