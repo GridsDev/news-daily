@@ -1,4 +1,7 @@
 import ShareButtons from './ShareButtons.jsx'
+import LikeButton from './LikeButton.jsx'
+import SponsorBanner from './SponsorBanner.jsx'
+import { HIDE_SHARE } from '../config/site.js'
 
 export default function HomeView({ articles, onOpen }) {
   if (articles.length === 0) {
@@ -6,6 +9,7 @@ export default function HomeView({ articles, onOpen }) {
       <div className="empty">
         <h1>ยังไม่มีบทสรุป</h1>
         <p>รอระบบดึงข่าวรอบถัดไป — บอทจะเขียนไฟล์ให้อัตโนมัติ</p>
+        <SponsorBanner />
       </div>
     )
   }
@@ -25,7 +29,8 @@ export default function HomeView({ articles, onOpen }) {
           <button className="btn-primary" onClick={() => onOpen(latest.date)}>
             อ่านฉบับนี้ →
           </button>
-          <ShareButtons article={latest} compact />
+          <LikeButton date={latest.date} compact />
+          {!HIDE_SHARE && <ShareButtons article={latest} compact />}
         </div>
       </section>
 
@@ -60,6 +65,8 @@ export default function HomeView({ articles, onOpen }) {
           </ul>
         </section>
       )}
+
+      <SponsorBanner />
     </>
   )
 }

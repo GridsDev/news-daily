@@ -2,8 +2,10 @@
  * อ่านข้อมูลบทสรุปจาก Supabase (PostgREST) — ฝั่ง browser
  *
  * ใช้ anon key ตัวเดียว ซึ่งเป็น public โดย design ของ Supabase
- * ปลอดภัยเพราะ RLS จำกัดไว้ว่าอ่านได้แค่ daily_summaries
- * (ข่าวดิบ / view รวมข่าว = anon อ่านไม่ได้)
+ * ปลอดภัยเพราะ RLS จำกัดสิทธิ์รายตาราง:
+ *   - อ่าน: daily_summaries, summary_news, article_likes
+ *   - เขียน: article_likes เท่านั้น (INSERT — ลบ/แก้ของคนอื่นไม่ได้)
+ *   - อ่านไม่ได้: news_items (ข่าวดิบ), view ที่รวมข่าว
  *
  * ถ้าตั้ง env ไม่ครบ → โมดูลนี้จะคืน null แล้วเว็บ fallback ไปอ่านไฟล์ .md ที่ฝังใน bundle
  */
@@ -13,9 +15,10 @@ const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const isConfigured = Boolean(URL && KEY)
 
-const HEADERS = {
+export const supabaseHeaders = {
   apikey: KEY,
   Authorization: `Bearer ${KEY}`,
+  'Content-Type': 'application/json',
 }
 
 const MONTHS = [
@@ -38,7 +41,7 @@ function weekday(iso) {
 }
 
 async function query(path, params) {
-  const res = await fetch(`${URL}/rest/v1/${path}?${params}`, { headers: HEADERS })
+  const res = await fetch(`${URL}/rest/v1/${path}?${params}`, { headers: supabaseHeaders })
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`)
   return res.json()
 }

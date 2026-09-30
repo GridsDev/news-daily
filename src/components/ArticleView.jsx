@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import ShareButtons from './ShareButtons.jsx'
+import LikeButton from './LikeButton.jsx'
+import { HIDE_SHARE } from '../config/site.js'
 
 export default function ArticleView({ article, onBack }) {
   return (
@@ -24,7 +26,10 @@ export default function ArticleView({ article, onBack }) {
             ))}
           </div>
         )}
-        <ShareButtons article={article} />
+        <div className="article-actions">
+          <LikeButton date={article.date} />
+          {!HIDE_SHARE && <ShareButtons article={article} />}
+        </div>
       </header>
 
       <div className="prose">
@@ -46,7 +51,7 @@ export default function ArticleView({ article, onBack }) {
       </div>
 
       <footer className="article-foot">
-        <ShareButtons article={article} />
+        {!HIDE_SHARE && <ShareButtons article={article} />}
         <button className="btn-back" onClick={onBack}>
           ← กลับหน้ารายการ
         </button>

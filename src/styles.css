@@ -577,3 +577,181 @@ body {
     display: none;
   }
 }
+
+/* ---------- Article actions ---------- */
+.article-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ---------- LINE button ---------- */
+.share-line:hover {
+  color: #06c755;
+  border-color: #06c755;
+  background: rgba(6, 199, 85, 0.1);
+}
+
+:root[data-theme='light'] .share-line:hover {
+  color: #05a745;
+  border-color: #05a745;
+}
+
+/* ---------- Like button ---------- */
+.like-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 62px;
+  justify-content: center;
+}
+
+.like-btn:hover:not(:disabled) {
+  color: #f85149;
+  border-color: #f85149;
+  background: rgba(248, 81, 73, 0.1);
+  transform: translateY(-1px);
+}
+
+.like-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.like-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.like-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* ---------- Sponsor banner ---------- */
+.sponsor {
+  margin-top: 48px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-soft);
+}
+
+.sponsor-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.sponsor-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.sponsor-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.sponsor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.sponsor-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.18s;
+}
+
+.sponsor-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.sponsor-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--bg-soft);
+  flex-shrink: 0;
+}
+
+.sponsor-logo-text {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.sponsor-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+.sponsor-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sponsor-tagline {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sponsor-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
