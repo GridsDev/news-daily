@@ -483,3 +483,11 @@ body {
     font-size: 16px;
   }
 }
+
+/* ---------- Loading ---------- */
+.loading {
+  text-align: center;
+  padding: 100px 20px;
+  color: var(--text-dim);
+  font-size: 15px;
+}

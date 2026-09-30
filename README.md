@@ -46,3 +46,28 @@ npm run preview  # ทดสอบ build
 - บอทเก็บอยู่ที่ Gitea `Ex3-NeoPulse/news-bot` และรันบน `sv` เท่านั้น
 - ไม่มีการเก็บ secret ใดๆ ใน repo นี้
 - ต้องเป็น **PUBLIC** — repo ที่เป็น private จะถูก Vercel block deployment
+
+## ฐานข้อมูล (Supabase)
+
+หน้าเว็บอ่านบทสรุปจาก Supabase ผ่าน PostgREST โดยตรง (ไม่มี server)
+
+| ตัวแปร | ที่ใช้ |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://<ref>.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | anon key (public โดย design) |
+
+ใส่ใน `.env.local` (ไม่ commit) หรือเป็น Environment Variables บน Vercel
+
+### ทำไม anon key ใส่ใน browser ได้
+
+anon key เป็น **public โดย design** ของ Supabase — ปลอดภัยเพราะ **RLS** กำหนดว่า:
+- อ่าน `daily_summaries` ได้ (หน้าเว็บใช้ตารางนี้)
+- อ่าน `news_items` ไม่ได้ (ข่าวดิบเป็นข้อมูลภายใน)
+- เขียนอะไรไม่ได้เลย
+
+ถ้าอยากย้ายไปใช้แบบฝั่ง server ภายหลัง ให้เพิ่ม API route ใน Vercel
+
+### ถ้า DB มีปัญหา
+
+เว็บจะ fallback ไปอ่านไฟล์ `.md` ที่ฝังอยู่ใน bundle ตอน build — ยังแสดงผลได้ปกติ
+ดูสถานะได้ที่ท้ายหน้า: "ข้อมูลสดจากฐานข้อมูล" = อ่าน DB · "โหมดสำรอง" = ใช้ไฟล์ใน bundle

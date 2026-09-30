@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { articles } from './content.js'
+import { loadArticles } from './content-source.js'
 import ArticleView from './components/ArticleView.jsx'
 import HomeView from './components/HomeView.jsx'
 
@@ -11,6 +11,20 @@ function parseHash() {
 export default function App() {
   const [slug, setSlug] = useState(parseHash)
   const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
+  const [articles, setArticles] = useState([])
+  const [source, setSource] = useState('loading')
+
+  useEffect(() => {
+    let alive = true
+    loadArticles().then((result) => {
+      if (!alive) return
+      setArticles(result.articles)
+      setSource(result.source)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   useEffect(() => {
     const onHash = () => setSlug(parseHash())
@@ -30,6 +44,7 @@ export default function App() {
   }
 
   const current = slug ? articles.find((a) => a.slug === slug) : null
+  const loading = source === 'loading'
 
   return (
     <>
@@ -51,7 +66,7 @@ export default function App() {
           </a>
 
           <div className="header-actions">
-            <span className="count-badge">{articles.length} ฉบับ</span>
+            {!loading && <span className="count-badge">{articles.length} ฉบับ</span>}
             <button
               className="theme-toggle"
               onClick={() => setDark((d) => !d)}
@@ -65,7 +80,9 @@ export default function App() {
       </header>
 
       <main className="wrap main">
-        {current ? (
+        {loading ? (
+          <p className="loading">กำลังโหลดบทสรุป…</p>
+        ) : current ? (
           <ArticleView article={current} onBack={() => go('')} />
         ) : (
           <HomeView articles={articles} onOpen={go} />
@@ -74,7 +91,10 @@ export default function App() {
 
       <footer className="site-footer">
         <div className="wrap">
-          <p>สร้างอัตโนมัติโดย newsbot บนเครื่อง sv · อัปเดตทุกวัน 07:00 น.</p>
+          <p>
+            สร้างอัตโนมัติโดย newsbot บนเครื่อง sv · อัปเดตทุกวัน 07:00 น.
+            {source === 'db' ? ' · ข้อมูลสดจากฐานข้อมูล' : source === 'bundle' ? ' · โหมดสำรอง' : ''}
+          </p>
         </div>
       </footer>
     </>
