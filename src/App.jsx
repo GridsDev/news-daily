@@ -61,7 +61,7 @@ export default function App() {
             <span className="brand-mark">ND</span>
             <span className="brand-text">
               <strong>บทสรุปข่าวประจำวัน</strong>
-              <small>คริปโต · เทคโนโลยี · ธุรกิจ</small>
+              <small>BTC · ETH · SOL</small>
             </span>
           </a>
 
