@@ -2,9 +2,9 @@
 
 🔗 **เว็บ**: https://news-daily-lemon.vercel.app
 
-บทสรุป**ข่าวคริปโต** BTC · ETH · SOL — ระบบ `newsbot` บนเครื่อง `sv` สร้างอัตโนมัติทุกวัน 07:00
+เว็บแสดงบทสรุป**ข่าวคริปโต** BTC · ETH · SOL จาก Supabase/ไฟล์สำรอง พร้อม API JSON และ RSS สำหรับข่าวรายวัน
 
-> repo นี้มี **UI อย่างเดียว** — โค้ด Python อยู่ที่ Gitea `Ex3-NeoPulse/news-bot` (ห้ามรวมกันตามกฎของทีม)
+> repo นี้มี UI และ Vercel Serverless API (JavaScript) — โค้ด Python อยู่ที่ Gitea `Ex3-NeoPulse/news-bot` (ห้ามรวมกันตามกฎของทีม)
 
 ---
 
@@ -12,7 +12,7 @@
 
 ```mermaid
 flowchart TD
-    BOT(["🖥️ newsbot บน sv<br/>รัน 05:00 ทุกวัน"]) --> DB[("🗄️ Supabase<br/>daily_summaries")]
+    BOT(["🖥️ newsbot บน sv<br/>รัน 05:00 ทุกวัน"]) --> DB[("🗄️ Supabase<br/>daily_summaries · news_items · news_technology · news_economy · news_general")]
     BOT --> MD[("📦 content/news/<br/>บทสรุป-YYYY-MM-DD.md")]
     MD --> GH --> V["▲ Vercel build"] --> SITE
 
@@ -20,8 +20,8 @@ flowchart TD
         direction TB
         LOAD(["เปิดหน้า"]) --> CFG{"มี VITE_SUPABASE_*?"}
         CFG -- "ไม่" --> BUNDLE["📦 ใช้ .md ใน bundle<br/>โหมดสำรอง"]
-        CFG -- "มี" --> API["📡 PostgREST<br/>daily_summaries"]
-        API --> Q{"สำเร็จ?"}
+        CFG -- "มี" --> REST["📡 PostgREST<br/>daily_summaries"]
+        REST --> Q{"สำเร็จ?"}
         Q -- "DB ว่าง / ล่ม" --> BUNDLE
         Q -- "ได้ข้อมูล" --> MERGE["🔀 รวม DB + bundle"]
         BUNDLE --> LIST["📋 รายการฉบับล่าสุด"]
@@ -30,6 +30,7 @@ flowchart TD
         DETAIL --> FOOT["🔎 ท้ายหน้า: แหล่งข้อมูล"]
     end
 
+    CLIENTS(["API/RSS clients"]) --> FUNCTIONS["Vercel Functions<br/>/api/news · /api/rss"] --> DB
     SITE -.->|"อ่านสด"| DB
 
     style SITE fill:#0d1117,stroke:#4f9cf9,color:#e6edf3
@@ -60,7 +61,7 @@ flowchart TD
 ```
 
 > **ทำไมไม่ใช้ `#/...`**: Facebook ตัดส่วน `#` ทิ้งตอนแชร์ → คนกดลิงก์จะไปหน้าแรกแทนที่จะไปบทความที่แชร์
-> เลยใช้ URL จริง + `vercel.json` มี rewrite ให้ทุก path มาที่ `index.html`
+> เลยใช้ History API + URL จริง; Vercel rewrite เฉพาะ `/อ่าน/:slug` มาที่ `index.html` และปล่อย `/api/*` ให้ Functions
 
 ## โครงสร้าง
 
@@ -69,20 +70,22 @@ index.html                        ← จุดเริ่มต้น
 vercel.json                       ← framework/build/output ที่ Vercel ใช้
 src/
 ├── main.jsx                      ← mount React
-├── App.jsx                       ← routing (hash) + theme + โหลดข้อมูล async
+├── App.jsx                       ← theme + โหลดข้อมูล async + แสดงหน้าแรก/บทความ
 ├── content-source.js             ← ★ ตัวตัดสินใจ: DB หรือ bundle
 ├── content.js                    ← อ่าน .md ทั้งหมดตอน build (import.meta.glob)
 ├── lib/
 │   ├── supabase.js               ← ★ อ่าน DB ผ่าน PostgREST
-│   └── router.js                 ← ★ เส้นทาง URL จริง (แทน hash)
+│   └── router.js                 ← ★ History API: /อ่าน/YYYY-MM-DD
 ├── components/
-│   └── ShareButtons.jsx          ← ★ ปุ่มแชร์ 3 ปุ่ม
-├── components/
+│   ├── ShareButtons.jsx          ← ★ ปุ่มแชร์ 3 ปุ่ม
 │   ├── HomeView.jsx              ← หน้ารายการ (ฉบับล่าสุด + ฉบับก่อนหน้า)
 │   └── ArticleView.jsx           ← หน้าอ่านเต็ม + front-matter
 └── styles.css                    ← ธีมสว่าง/มืด + responsive
 
 content/news/บทสรุป-YYYY-MM-DD.md  ← บอทเขียนไฟล์นี้ (fallback)
+api/news.js                        ← GET /api/news (JSON)
+api/rss.js                         ← GET /api/rss (RSS 2.0)
+api/_lib/news.js                   ← allowlist, query bounds, Supabase server client
 ```
 
 | ไฟล์สำคัญ | หน้าที่ |
@@ -120,11 +123,13 @@ flowchart LR
 - **"ข้อมูลสดจากฐานข้อมูล"** = อ่าน DB สำเร็จ
 - **"โหมดสำรอง"** = ใช้ไฟล์ใน bundle
 
+โหมดสำรองใช้เมื่อไม่มี Supabase env, DB ไม่มีข้อมูล หรืออ่าน DB ล้มเหลว และจะรวมบทความจาก bundle ที่ไม่มีใน DB เข้าไปด้วย
+
 ---
 
 ## ฐานข้อมูล (Supabase)
 
-หน้าเว็บอ่านผ่าน **PostgREST** โดยตรง — ไม่มี server ไม่มี API key ที่ต้องซ่อน
+หน้าเว็บยังอ่านบทสรุปผ่าน **PostgREST** ด้วย anon key ส่วน API/RSS ทำงานผ่าน Vercel Functions และเชื่อม PostgreSQL โดยตรงด้วย `DATABASE_URL` ของ role `newsbot`
 
 | ตัวแปร | ค่า |
 |---|---|
@@ -142,11 +147,21 @@ anon key เป็น **public โดย design** — ปลอดภัยเ�
 | `daily_summaries` (บทสรุป) | ✅ | ❌ |
 | `summary_news` (ผูก) | ✅ | ❌ |
 | `news_items` (ข่าวดิบ) | ❌ | ❌ |
+| `news_technology`, `news_economy`, `news_general` | ❌ | ❌ |
 | view รวมข่าว | ❌ | ❌ |
 
 > ทดสอบจริงแล้ว: `daily_summaries` → 200 · `news_items` → `[]` · view → 401 · INSERT → 401
 
-ถ้าอยากย้ายไปฝั่ง server ภายหลัง ให้เพิ่ม API route ใน Vercel แล้วซ่อน key ไว้ฝั่งนั้น
+### Endpoints ข่าว
+
+| Endpoint | ผลลัพธ์ |
+|---|---|
+| `/api/news?category=technology&limit=20` | JSON ข่าว |
+| `/api/rss?category=technology` | RSS 2.0 |
+
+รองรับ `crypto`, `technology`, `economy`, `general` และ `all` (ค่าเริ่มต้น); `crypto` อ่านจาก `news_items` ส่วนสามหมวดที่เหลืออ่านจากตารางชื่อเดียวกัน (`news_technology`, `news_economy`, `news_general`); `limit` เริ่มต้น 20 สูงสุด 100; `since` รับวันที่/เวลาที่ JavaScript parse ได้ ทั้งสอง endpoint เป็น public read-only, รับ GET/HEAD/OPTIONS, อนุญาต CORS ทุก origin และ cache ที่ edge 5 นาที ปัจจุบันยังไม่มี authentication หรือ rate limit แยกตามผู้เรียก
+
+ตั้ง Environment Variable `DATABASE_URL` ฝั่ง Vercel ให้ชี้ Supabase PostgreSQL โดยใช้ role `newsbot` (ใช้ค่าเดียวกับ `news-bot/.env.local` แต่ตั้งใน Vercel แยกต่างหาก; ห้าม commit หรือวางใน `VITE_*`). API ใช้ `pg` ทำเฉพาะ `SELECT` จากตารางใน allowlist และใช้ bound parameters กับ filter. หาก config ขาด endpoint ตอบ 503; ตารางหมวดต้องมีอยู่และมีข้อมูลก่อนจึงจะคืนข่าวได้ โดย migration อยู่ใน repo `news-bot` ที่ `db/002_category_news.sql`
 
 ---
 
@@ -157,7 +172,10 @@ npm install
 npm run dev        # โหมดพัฒนา (port 5173)
 npm run build      # build เป็น static → dist/
 npm run preview    # ทดสอบ build
+npm run test:api   # ทดสอบ API/RSS handlers
 ```
+
+`npm run dev` และ `npm run preview` เสิร์ฟเฉพาะ Vite frontend ไม่ได้รัน Vercel Functions; หากต้องทดสอบ API ในเครื่องต้องใช้ Vercel CLI (`vercel dev`) และตั้ง server Environment Variables ให้ครบ
 
 ### Vite อ่าน env ตอน build
 
@@ -173,11 +191,11 @@ npm run preview    # ทดสอบ build
 
 | ส่วน | เวอร์ชัน | หมายเหตุ |
 |---|---|---|
-| Vite | 8.3.1 | `npm audit` = 0 vulnerabilities |
-| React | 19.3.0 | — |
+| Vite | 8.3.1 | — |
+| React / React DOM | 19.3.0 | เวอร์ชันที่ติดตั้งตาม lockfile |
 | react-markdown | 10.1.0 | + remark-gfm (ตาราง/ลิสต์) |
-| เส้นทาง | hash routing | `#/บทสรุป-2026-09-30` · ไม่ต้องตั้ง rewrite บน server |
-| ผลลัพธ์ build | ~400 KB (gzip 122 KB) | static ล้วน ไม่มี server |
+| เส้นทาง | History API | `/อ่าน/YYYY-MM-DD` · Vercel rewrite ไป `index.html` |
+| Main JavaScript bundle | 724.74 kB (gzip 195.88 kB) | ผลจาก Vite build ล่าสุด; Vite เตือนว่าเกิน 500 kB; API แยกเป็น Vercel Functions |
 
 ---
 
@@ -199,7 +217,7 @@ npm run preview    # ทดสอบ build
 - **repo ต้องเป็น PUBLIC** — ถ้าเป็น private จะถูก Vercel block deployment
   > พิสูจน์แล้ว 2026-09-30: เปลี่ยนเป็น public → `success — Deployment has completed` ทันที
 - **ห้าม commit `.env.local`** — อยู่ใน `.gitignore` แล้ว
-- **ไม่เก็บ secret ใดๆ ใน repo** — ตรวจแล้วไม่มี service_role หรือรหัส DB ใน bundle ที่ deploy
+- **ห้าม commit secret** — `DATABASE_URL` ต้องตั้งเป็น server Environment Variable ใน Vercel และห้ามใช้ในตัวแปร `VITE_*`
 
 ---
 

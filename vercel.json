@@ -8,10 +8,6 @@
     {
       "source": "/อ่าน/:slug",
       "destination": "/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }

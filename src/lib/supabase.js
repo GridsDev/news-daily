@@ -1,12 +1,13 @@
 /**
  * อ่านข้อมูลบทสรุปจาก Supabase (PostgREST) — ฝั่ง browser
  *
- * ใช้ anon key ตัวเดียว ซึ่งเป็น public โดย design ของ Supabase
+ * UI ใช้ anon key ตัวเดียว ซึ่งเป็น public โดย design ของ Supabase
  * ปลอดภัยเพราะ RLS จำกัดสิทธิ์รายตาราง:
  *   - อ่าน: daily_summaries, summary_news, article_likes
  *   - เขียน: article_likes เท่านั้น (INSERT — ลบ/แก้ของคนอื่นไม่ได้)
  *   - อ่านไม่ได้: news_items (ข่าวดิบ), view ที่รวมข่าว
  *
+ * API/RSS ฝั่ง server อยู่ใน api/ และไม่ใช้ key จากโมดูล browser นี้
  * ถ้าตั้ง env ไม่ครบ → โมดูลนี้จะคืน null แล้วเว็บ fallback ไปอ่านไฟล์ .md ที่ฝังใน bundle
  */
 

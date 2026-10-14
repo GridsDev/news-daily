@@ -14,10 +14,10 @@
  *
  * ⚠️ ถ้ายังไม่ได้ตั้ง — ปุ่มจะซ่อนตัวเองอัตโนมัติ (ไม่ทำให้เว็บพัง)
  */
-export const LINE_ID = ''
+export const LINE_ID = '874nfttv'
 
 /** URL ของเพจ Facebook (ถ้าต้องการผูกไว้ที่ไหน) */
-export const FACEBOOK_PAGE_URL = ''
+export const FACEBOOK_PAGE_URL = 'https://www.facebook.com/MicrotronicTH/'
 
 /** ปิดปุ่มแชร์ทั้งหมด (true = ซ่อนปุ่มแชร์) */
 export const HIDE_SHARE = false
@@ -36,7 +36,12 @@ export const HIDE_SHARE = false
  *   badge: 'ผู้สนับสนุนทอง',
  * }
  */
-export const SPONSORS = []
+export const SPONSORS = [
+  {
+    name: 'Microtronic',
+    url: 'https://Microtronic.biz',
+  }
+]
 
 /** ตำแหน่งแบนเนอร์: 'top' = ใต้ header · 'bottom' = ท้ายหน้า · 'both' = ทั้งสองที่ */
 export const SPONSOR_POSITION = 'bottom'
