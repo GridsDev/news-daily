@@ -7,10 +7,12 @@
  */
 
 export const READ_PREFIX = '/อ่าน'
+export const NEWS_PATH = '/ข่าว'
 
 /** '/อ่าน/2026-09-30' → '2026-09-30' | '/' → '' */
 export function parsePath(pathname = window.location.pathname) {
   const decoded = safeDecode(pathname)
+  if (decoded === NEWS_PATH || decoded === `${NEWS_PATH}/`) return 'news'
   const match = decoded.match(/^\/อ่าน\/([^/]+)\/?$/)
   return match ? match[1] : ''
 }
@@ -35,7 +37,9 @@ export function homeUrl() {
 
 /** เปลี่ยนหน้าโดยไม่ reload (ใช้ pushState) */
 export function navigate(date) {
-  const url = date ? `${READ_PREFIX}/${encodeURIComponent(date)}` : '/'
+  const url = date === 'news'
+    ? NEWS_PATH
+    : date ? `${READ_PREFIX}/${encodeURIComponent(date)}` : '/'
   if (window.location.pathname !== url) {
     window.history.pushState({}, '', url)
   }

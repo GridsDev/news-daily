@@ -3,9 +3,10 @@ import { loadArticles } from './content-source.js'
 import { parsePath, navigate } from './lib/router.js'
 import ArticleView from './components/ArticleView.jsx'
 import HomeView from './components/HomeView.jsx'
+import NewsView from './components/NewsView.jsx'
 
 export default function App() {
-  const [date, setDate] = useState(parsePath)
+  const [route, setRoute] = useState(parsePath)
   const [dark, setDark] = useState(() => localStorage.getItem('theme') !== 'light')
   const [articles, setArticles] = useState([])
   const [source, setSource] = useState('loading')
@@ -24,7 +25,7 @@ export default function App() {
 
   useEffect(() => {
     // ปุ่มหลัง/หน้าแรก ของเบราว์เซอร์
-    const onPop = () => setDate(parsePath())
+    const onPop = () => setRoute(parsePath())
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
@@ -36,17 +37,22 @@ export default function App() {
 
   const go = (target) => {
     navigate(target)
-    setDate(target)
+    setRoute(target)
   }
 
-  const current = date ? articles.find((a) => a.date === date || a.slug === date) : null
+  const isNews = route === 'news'
+  const current = route && !isNews
+    ? articles.find((a) => a.date === route || a.slug === route)
+    : null
   const loading = source === 'loading'
 
   useEffect(() => {
-    document.title = current
+    document.title = isNews
+      ? 'ข่าวล่าสุด · ข่าวประจำวัน'
+      : current
       ? `${current.title} · บทสรุปข่าวคริปโต`
       : 'บทสรุปข่าวคริปโตประจำวัน · BTC ETH SOL'
-  }, [current])
+  }, [current, isNews])
 
   return (
     <>
@@ -67,6 +73,29 @@ export default function App() {
             </span>
           </a>
 
+          <nav className="main-nav" aria-label="เมนูหลัก">
+            <a
+              href="/"
+              aria-current={!isNews && !current ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault()
+                go('')
+              }}
+            >
+              บทสรุป
+            </a>
+            <a
+              href="/ข่าว"
+              aria-current={isNews ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault()
+                go('news')
+              }}
+            >
+              ข่าวล่าสุด
+            </a>
+          </nav>
+
           <div className="header-actions">
             {!loading && <span className="count-badge">{articles.length} ฉบับ</span>}
             <button
@@ -84,6 +113,8 @@ export default function App() {
       <main className="wrap main">
         {loading ? (
           <p className="loading">กำลังโหลดบทสรุป…</p>
+        ) : isNews ? (
+          <NewsView />
         ) : current ? (
           <ArticleView article={current} onBack={() => go('')} />
         ) : (
