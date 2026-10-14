@@ -63,6 +63,7 @@ export async function fetchSummaries() {
     date: r.summary_date,
     dateLabel: thaiDateLabel(r.summary_date),
     weekday: weekday(r.summary_date),
+    tags: [],
     sourceCount: r.source_count ?? 0,
     wordCount: r.word_count ?? 0,
     model: r.model_used,
